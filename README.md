@@ -134,6 +134,102 @@ Remove a site from the system.
   - `200 OK`: The site has been successfully deleted.
   - `404 Not Found`: Site not found.
 
+---
+
+### Jobs
+
+Tag: `jobs`
+
+#### 1. Create a new job
+- **URL**: `/jobs`
+- **Method**: `POST`
+- **Request Body**: [CreateJobDto](#createjobdto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Retrieve all jobs
+- **URL**: `/jobs`
+- **Method**: `GET`
+- **Responses**: `200 OK` - Returns array of [Job](#job) objects.
+
+#### 3. Retrieve a job by ID
+- **URL**: `/jobs/:id`
+- **Method**: `GET`
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Retrieve all jobs for a site
+- **URL**: `/jobs/site/:siteId`
+- **Method**: `GET`
+- **Responses**: `200 OK` - Returns array of [Job](#job) objects.
+
+#### 5. Update a job by ID
+- **URL**: `/jobs/:id`
+- **Method**: `PATCH`
+- **Request Body**: Partial [CreateJobDto](#createjobdto)
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 6. Delete a job by ID
+- **URL**: `/jobs/:id`
+- **Method**: `DELETE`
+- **Responses**: `200 OK`, `404 Not Found`
+
+---
+
+### Drawing Columns
+
+Tag: `drawing-columns`
+
+Dynamic column definitions for job drawing lists.
+
+#### 1. Create a column
+- **URL**: `/jobs/:jobId/columns`
+- **Method**: `POST`
+- **Request Body**: [CreateDrawingColumnDto](#createdrawingcolumndto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Retrieve all columns for a job
+- **URL**: `/jobs/:jobId/columns`
+- **Method**: `GET`
+- **Responses**: `200 OK`
+
+#### 3. Update a column
+- **URL**: `/jobs/:jobId/columns/:id`
+- **Method**: `PATCH`
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Delete a column
+- **URL**: `/jobs/:jobId/columns/:id`
+- **Method**: `DELETE`
+- **Responses**: `200 OK`, `404 Not Found`
+
+---
+
+### Drawings
+
+Tag: `drawings`
+
+Drawing entries with dynamic JSONB data.
+
+#### 1. Create a drawing
+- **URL**: `/jobs/:jobId/drawings`
+- **Method**: `POST`
+- **Request Body**: [CreateDrawingDto](#createdrawingdto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Retrieve all drawings for a job
+- **URL**: `/jobs/:jobId/drawings`
+- **Method**: `GET`
+- **Responses**: `200 OK`
+
+#### 3. Update a drawing
+- **URL**: `/jobs/:jobId/drawings/:id`
+- **Method**: `PATCH`
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Delete a drawing
+- **URL**: `/jobs/:jobId/drawings/:id`
+- **Method**: `DELETE`
+- **Responses**: `200 OK`, `404 Not Found`
+
 ## Data Models
 
 ### Project
@@ -181,6 +277,61 @@ Remove a site from the system.
 | `name` | String | The name of the site. | Yes | "Main Building" |
 | `address` | String | The address of the site. | Yes | "456 Oak Ave, Springfield" |
 | `projectId` | UUID | The project ID this site belongs to. | Yes | "uuid-here" |
+
+### Job
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the job. |
+| `name` | String | The name of the job. |
+| `description` | String | The description of the job (optional). |
+| `siteId` | UUID | The ID of the site this job belongs to. |
+| `createdAt` | Date | Timestamp of creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+### CreateJobDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `name` | String | Yes | "Electrical Installation" |
+| `description` | String | No | "Install electrical wiring" |
+| `siteId` | UUID | Yes | "uuid-here" |
+
+### DrawingColumn
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the column. |
+| `name` | String | The column name. |
+| `type` | Enum | Column type: `text`, `number`, `date`, `boolean`. |
+| `required` | Boolean | Whether this column is required. |
+| `order` | Integer | Display order. |
+| `jobId` | UUID | The job this column belongs to. |
+
+### CreateDrawingColumnDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `name` | String | Yes | "Drawing Number" |
+| `type` | Enum | No | "text" |
+| `required` | Boolean | No | false |
+| `order` | Integer | No | 0 |
+
+### Drawing
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the drawing. |
+| `data` | JSONB | Dynamic key-value pairs based on columns. |
+| `jobId` | UUID | The job this drawing belongs to. |
+| `createdAt` | Date | Timestamp of creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+### CreateDrawingDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `data` | Object | Yes | `{ "drawingNumber": "DWG-001", "revision": "A" }` |
 
 ## Configuration
 
