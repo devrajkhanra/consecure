@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { ProjectStatus } from "./project-status.enum";
 import { ApiProperty } from "@nestjs/swagger";
+import { Site } from "../../site/entities/site.entity";
 
 @Entity('projects')
 export class Project {
@@ -51,4 +52,8 @@ export class Project {
     @ApiProperty({ description: 'The date when the project was last updated' })
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
+
+    @ApiProperty({ description: 'The sites associated with this project', type: () => [Site] })
+    @OneToMany(() => Site, (site) => site.project)
+    sites: Site[];
 }

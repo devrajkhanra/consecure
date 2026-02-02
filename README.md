@@ -66,6 +66,74 @@ Remove a project from the system.
   - `200 OK`: The project has been successfully deleted.
   - `404 Not Found`: Project not found.
 
+---
+
+### Sites
+
+Tag: `sites`
+
+#### 1. Create a new site
+Create a new site for a project.
+
+- **URL**: `/sites`
+- **Method**: `POST`
+- **Request Body**: [CreateSiteDto](#createsitedto)
+- **Responses**:
+  - `201 Created`: The site has been successfully created. Returns the [Site](#site) object.
+  - `400 Bad Request`: Validation error.
+
+#### 2. Retrieve all sites
+Get a list of all sites.
+
+- **URL**: `/sites`
+- **Method**: `GET`
+- **Responses**:
+  - `200 OK`: Returns an array of [Site](#site) objects.
+
+#### 3. Retrieve a site by ID
+Get a specific site by its unique UUID.
+
+- **URL**: `/sites/:id`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `id`: UUID of the site.
+- **Responses**:
+  - `200 OK`: Returns the [Site](#site) object.
+  - `404 Not Found`: Site not found.
+
+#### 4. Retrieve all sites for a project
+Get all sites belonging to a specific project.
+
+- **URL**: `/sites/project/:projectId`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `projectId`: UUID of the project.
+- **Responses**:
+  - `200 OK`: Returns an array of [Site](#site) objects.
+
+#### 5. Update a site by ID
+Update an existing site.
+
+- **URL**: `/sites/:id`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `id`: UUID of the site.
+- **Request Body**: Partial [CreateSiteDto](#createsitedto)
+- **Responses**:
+  - `200 OK`: The site has been successfully updated. Returns the [Site](#site) object.
+  - `404 Not Found`: Site not found.
+
+#### 6. Delete a site by ID
+Remove a site from the system.
+
+- **URL**: `/sites/:id`
+- **Method**: `DELETE`
+- **URL Parameters**:
+  - `id`: UUID of the site.
+- **Responses**:
+  - `200 OK`: The site has been successfully deleted.
+  - `404 Not Found`: Site not found.
+
 ## Data Models
 
 ### Project
@@ -94,6 +162,32 @@ Remove a project from the system.
 | `startDate` | String (ISO8601) | The start date of the project. | Yes | "2023-01-01" |
 | `endDate` | String (ISO8601) | The end date of the project. | No | "2023-12-31" |
 | `status` | Enum (ProjectStatus) | The status of the project. | No | "BACKLOG" |
+
+### Site
+
+| Field | Type | Description | Unique |
+|---|---|---|---|
+| `id` | UUID | The unique identifier of the site. | Yes |
+| `name` | String | The name of the site. | No |
+| `address` | String | The address of the site. | No |
+| `projectId` | UUID | The ID of the project this site belongs to. | No |
+| `createdAt` | Date | Timestamp of creation. | No |
+| `updatedAt` | Date | Timestamp of last update. | No |
+
+### CreateSiteDto
+
+| Field | Type | Description | Required | Example |
+|---|---|---|---|---|
+| `name` | String | The name of the site. | Yes | "Main Building" |
+| `address` | String | The address of the site. | Yes | "456 Oak Ave, Springfield" |
+| `projectId` | UUID | The project ID this site belongs to. | Yes | "uuid-here" |
+
+## Configuration
+
+### CORS
+Cross-Origin Resource Sharing (CORS) is enabled by default, allowing frontend applications running on different origins to access the API.
+
+---
 
 ## Running the application
 
