@@ -25,6 +25,13 @@ export class DrawingColumn {
     @Column({ default: 0 })
     order: number;
 
+    @ApiProperty({
+        description: 'Whether this column is the revision tracking column. Only changes to this column trigger change history logging.',
+        default: false
+    })
+    @Column({ name: 'is_revision_column', default: false })
+    isRevisionColumn: boolean;
+
     @ApiProperty({ description: 'The job this column belongs to', type: () => Job })
     @ManyToOne(() => Job, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'job_id' })
@@ -34,3 +41,4 @@ export class DrawingColumn {
     @Column({ name: 'job_id' })
     jobId: string;
 }
+

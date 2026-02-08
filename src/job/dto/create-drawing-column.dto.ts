@@ -22,4 +22,14 @@ export class CreateDrawingColumnDto {
     @IsInt()
     @IsOptional()
     order?: number;
+
+    @ApiProperty({
+        description: 'Mark this column as the revision tracking column. Only changes to this column will trigger change history logging.',
+        example: false,
+        required: false
+    })
+    @IsBoolean()
+    @IsOptional()
+    isRevisionColumn?: boolean;
 }
+

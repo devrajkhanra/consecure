@@ -12,6 +12,18 @@ export class Drawing {
     @Column({ type: 'jsonb', default: {} })
     data: Record<string, any>;
 
+    @ApiProperty({ description: 'Revision number (starts at 1)', default: 1 })
+    @Column({ default: 1 })
+    revision: number;
+
+    @ApiProperty({ description: 'Parent drawing ID (previous revision)', nullable: true })
+    @Column({ name: 'parent_id', type: 'uuid', nullable: true })
+    parentId: string;
+
+    @ApiProperty({ description: 'Whether this is the latest/active revision', default: true })
+    @Column({ name: 'is_latest', default: true })
+    isLatest: boolean;
+
     @ApiProperty({ description: 'The job this drawing belongs to', type: () => Job })
     @ManyToOne(() => Job, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'job_id' })
@@ -29,3 +41,4 @@ export class Drawing {
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
 }
+

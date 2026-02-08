@@ -13,6 +13,10 @@ export class DrawingColumnService {
     ) { }
 
     async create(jobId: string, createDto: CreateDrawingColumnDto): Promise<DrawingColumn> {
+        // If marking this as revision column, unmark any existing one
+        if (createDto.isRevisionColumn) {
+            await this.clearRevisionColumn(jobId);
+        }
         const column = this.columnRepository.create({ ...createDto, jobId });
         return await this.columnRepository.save(column);
     }
@@ -29,8 +33,20 @@ export class DrawingColumnService {
         return column;
     }
 
+    async findRevisionColumn(jobId: string): Promise<DrawingColumn | null> {
+        return await this.columnRepository.findOne({
+            where: { jobId, isRevisionColumn: true }
+        });
+    }
+
     async update(id: string, updateDto: UpdateDrawingColumnDto): Promise<DrawingColumn> {
         const column = await this.findOne(id);
+
+        // If marking this as revision column, unmark any existing one first
+        if (updateDto.isRevisionColumn && !column.isRevisionColumn) {
+            await this.clearRevisionColumn(column.jobId);
+        }
+
         Object.assign(column, updateDto);
         return await this.columnRepository.save(column);
     }
@@ -39,4 +55,13 @@ export class DrawingColumnService {
         const column = await this.findOne(id);
         await this.columnRepository.remove(column);
     }
+
+    private async clearRevisionColumn(jobId: string): Promise<void> {
+        const existingRevisionColumn = await this.findRevisionColumn(jobId);
+        if (existingRevisionColumn) {
+            existingRevisionColumn.isRevisionColumn = false;
+            await this.columnRepository.save(existingRevisionColumn);
+        }
+    }
 }
+

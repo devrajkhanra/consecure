@@ -33,6 +33,14 @@ export class DrawingController {
         return this.drawingService.findOne(id);
     }
 
+    @Get(':id/revisions')
+    @ApiOperation({ summary: 'Retrieve all revisions of a drawing' })
+    @ApiResponse({ status: 200, description: 'Return all revisions of the drawing.', type: [Drawing] })
+    @ApiResponse({ status: 404, description: 'Drawing not found.' })
+    findAllRevisions(@Param('id', ParseUUIDPipe) id: string) {
+        return this.drawingService.findAllRevisions(id);
+    }
+
     @Patch(':id')
     @ApiOperation({ summary: 'Update a drawing by ID' })
     @ApiResponse({ status: 200, description: 'The drawing has been successfully updated.', type: Drawing })
