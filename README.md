@@ -287,6 +287,100 @@ Tracks changes to drawings when the **revision column** value is modified.
   - `type` (optional): Filter by change type (`created`, `updated`, `merged`, `split`, `stopped`, `removed`, `upgraded`, `restored`)
 - **Responses**: `200 OK` - Returns array of [DrawingChangeHistory](#drawingchangehistory) objects
 
+---
+
+### Material Columns
+
+Tag: `material-columns`
+
+Dynamic column definitions for job material lists. Works the same way as Drawing Columns.
+
+#### 1. Create a material column
+- **URL**: `/jobs/:jobId/material-columns`
+- **Method**: `POST`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+- **Request Body**: [CreateMaterialColumnDto](#creatematerialcolumndto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Retrieve all material columns for a job
+- **URL**: `/jobs/:jobId/material-columns`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+- **Responses**: `200 OK`
+
+#### 3. Update a material column
+- **URL**: `/jobs/:jobId/material-columns/:id`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+  - `id`: UUID of the column
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Delete a material column
+- **URL**: `/jobs/:jobId/material-columns/:id`
+- **Method**: `DELETE`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+  - `id`: UUID of the column
+- **Responses**: `200 OK`, `404 Not Found`
+
+---
+
+### Materials
+
+Tag: `materials`
+
+Materials associated with drawings. Each drawing can have multiple materials. **Materials use dynamic JSONB data based on the Material Columns defined for the job.**
+
+#### 1. Add a material to a drawing
+- **URL**: `/drawings/:drawingId/materials`
+- **Method**: `POST`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+- **Request Body**: [CreateMaterialDto](#creatematerialdto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Get all materials for a drawing
+- **URL**: `/drawings/:drawingId/materials`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+- **Responses**: `200 OK` - Returns array of [Material](#material) objects
+
+#### 3. Get a material by ID
+- **URL**: `/drawings/:drawingId/materials/:id`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the material
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Update a material
+- **URL**: `/drawings/:drawingId/materials/:id`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the material
+- **Request Body**: Partial [CreateMaterialDto](#creatematerialdto)
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 5. Delete a material
+- **URL**: `/drawings/:drawingId/materials/:id`
+- **Method**: `DELETE`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the material
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 6. Get all materials for a job
+- **URL**: `/jobs/:jobId/materials`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+- **Responses**: `200 OK` - Returns all materials from **latest revisions** of drawings in the job
+
 ## Data Models
 
 ### Project
@@ -409,6 +503,42 @@ Tracks changes to drawings when the **revision column** value is modified.
 | `reason` | String | Optional change reason. |
 | `changedBy` | String | User who made the change. |
 | `createdAt` | Date | When the change occurred. |
+
+### MaterialColumn
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the column. |
+| `name` | String | The column name. |
+| `type` | Enum | Column type: `text`, `number`, `date`, `boolean`. |
+| `required` | Boolean | Whether this column is required. |
+| `order` | Integer | Display order. |
+| `jobId` | UUID | The job this column belongs to. |
+
+### CreateMaterialColumnDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `name` | String | Yes | "Material Name" |
+| `type` | Enum | No | "text" |
+| `required` | Boolean | No | false |
+| `order` | Integer | No | 0 |
+
+### Material
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the material. |
+| `data` | JSONB | Dynamic key-value pairs based on material columns. |
+| `drawingId` | UUID | The drawing this material belongs to. |
+| `createdAt` | Date | Timestamp of creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+### CreateMaterialDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `data` | Object | Yes | `{ "name": "Steel Pipe", "quantity": 10 }` |
 
 ## Configuration
 
