@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { Material } from './entities/material.entity';
+import { MaterialStatus } from './entities/material-status.enum';
 import { CreateMaterialDto } from './dto/create-material.dto';
 import { UpdateMaterialDto } from './dto/update-material.dto';
+import { UpdateMaterialStatusDto } from './dto/update-material-status.dto';
 
 @ApiTags('materials')
 @Controller('drawings/:drawingId/materials')
@@ -23,13 +25,15 @@ export class MaterialController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'Get all materials for a drawing' })
+    @ApiOperation({ summary: 'Get all materials for a drawing (optionally filter by status)' })
     @ApiParam({ name: 'drawingId', description: 'The drawing ID' })
+    @ApiQuery({ name: 'status', enum: MaterialStatus, required: false, description: 'Filter by material status' })
     @ApiResponse({ status: 200, description: 'Returns all materials for the drawing.', type: [Material] })
     async findAll(
         @Param('drawingId', ParseUUIDPipe) drawingId: string,
+        @Query('status') status?: MaterialStatus,
     ): Promise<Material[]> {
-        return await this.materialService.findByDrawing(drawingId);
+        return await this.materialService.findByDrawing(drawingId, status);
     }
 
     @Get(':id')
@@ -57,6 +61,19 @@ export class MaterialController {
         return await this.materialService.update(id, updateDto);
     }
 
+    @Patch(':id/status')
+    @ApiOperation({ summary: 'Update the status of a material' })
+    @ApiParam({ name: 'drawingId', description: 'The drawing ID' })
+    @ApiParam({ name: 'id', description: 'The material ID' })
+    @ApiResponse({ status: 200, description: 'The material status has been successfully updated.', type: Material })
+    @ApiResponse({ status: 404, description: 'Material not found.' })
+    async updateStatus(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: UpdateMaterialStatusDto,
+    ): Promise<Material> {
+        return await this.materialService.updateStatus(id, dto.status);
+    }
+
     @Delete(':id')
     @ApiOperation({ summary: 'Delete a material' })
     @ApiParam({ name: 'drawingId', description: 'The drawing ID' })
@@ -70,7 +87,7 @@ export class MaterialController {
     }
 }
 
-// Additional controller for job-level material access
+// Job-level material access
 @ApiTags('materials')
 @Controller('jobs/:jobId/materials')
 export class JobMaterialController {
@@ -84,5 +101,15 @@ export class JobMaterialController {
         @Param('jobId', ParseUUIDPipe) jobId: string,
     ): Promise<Material[]> {
         return await this.materialService.findByJob(jobId);
+    }
+
+    @Get('summary')
+    @ApiOperation({ summary: 'Get material summary for a job grouped by status' })
+    @ApiParam({ name: 'jobId', description: 'The job ID' })
+    @ApiResponse({ status: 200, description: 'Returns aggregated material data grouped by status.' })
+    async getSummary(
+        @Param('jobId', ParseUUIDPipe) jobId: string,
+    ) {
+        return await this.materialService.getJobMaterialSummary(jobId);
     }
 }

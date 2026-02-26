@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { ProjectModule } from './project/project.module';
 import { SiteModule } from './site/site.module';
 import { JobModule } from './job/job.module';
+import { MaterialModule } from './material/material.module';
+import { MaterialTransactionModule } from './material-transaction/material-transaction.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { JobModule } from './job/job.module';
     ProjectModule,
     SiteModule,
     JobModule,
+    MaterialModule,
+    MaterialTransactionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

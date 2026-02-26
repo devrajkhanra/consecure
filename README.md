@@ -332,7 +332,9 @@ Dynamic column definitions for job material lists. Works the same way as Drawing
 
 Tag: `materials`
 
-Materials associated with drawings. Each drawing can have multiple materials. **Materials use dynamic JSONB data based on the Material Columns defined for the job.**
+Materials associated with drawings with **lifecycle tracking**. Each drawing can have multiple materials. Materials use dynamic JSONB data based on the Material Columns defined for the job, plus built-in fields for tracking quantities and status.
+
+> **Material Status**: Each material has a `status` field that tracks its lifecycle: `required` → `issued` → `used`. Additional statuses include `pending`, `returned`, and `rejected`.
 
 #### 1. Add a material to a drawing
 - **URL**: `/drawings/:drawingId/materials`
@@ -347,6 +349,8 @@ Materials associated with drawings. Each drawing can have multiple materials. **
 - **Method**: `GET`
 - **URL Parameters**:
   - `drawingId`: UUID of the drawing
+- **Query Parameters**:
+  - `status` (optional): Filter by material status (`required`, `issued`, `used`, `pending`, `returned`, `rejected`)
 - **Responses**: `200 OK` - Returns array of [Material](#material) objects
 
 #### 3. Get a material by ID
@@ -366,7 +370,16 @@ Materials associated with drawings. Each drawing can have multiple materials. **
 - **Request Body**: Partial [CreateMaterialDto](#creatematerialdto)
 - **Responses**: `200 OK`, `404 Not Found`
 
-#### 5. Delete a material
+#### 5. Update material status
+- **URL**: `/drawings/:drawingId/materials/:id/status`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the material
+- **Request Body**: [UpdateMaterialStatusDto](#updatematerialstatusdto)
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 6. Delete a material
 - **URL**: `/drawings/:drawingId/materials/:id`
 - **Method**: `DELETE`
 - **URL Parameters**:
@@ -374,12 +387,86 @@ Materials associated with drawings. Each drawing can have multiple materials. **
   - `id`: UUID of the material
 - **Responses**: `200 OK`, `404 Not Found`
 
-#### 6. Get all materials for a job
+#### 7. Get all materials for a job
 - **URL**: `/jobs/:jobId/materials`
 - **Method**: `GET`
 - **URL Parameters**:
   - `jobId`: UUID of the job
 - **Responses**: `200 OK` - Returns all materials from **latest revisions** of drawings in the job
+
+#### 8. Get material summary for a job
+- **URL**: `/jobs/:jobId/materials/summary`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `jobId`: UUID of the job
+- **Responses**: `200 OK` - Returns aggregated material data grouped by status
+- **Response Example**:
+  ```json
+  [
+    { "status": "required", "count": 15, "totalRequired": 500, "totalIssued": 0, "totalUsed": 0 },
+    { "status": "issued", "count": 8, "totalRequired": 300, "totalIssued": 300, "totalUsed": 0 },
+    { "status": "used", "count": 5, "totalRequired": 200, "totalIssued": 200, "totalUsed": 180 }
+  ]
+  ```
+
+---
+
+### Material Transactions
+
+Tag: `material-transactions`
+
+Records of material issuance, usage, and returns. Each transaction is linked to a material and contains a **document number, date, and quantity**.
+
+> **Auto-sync**: When a transaction is created, updated, or deleted, the parent Material's `quantityIssued`, `quantityUsed`, and `status` are **automatically recalculated** from the sum of all its transactions.
+
+> **Auto-status logic**:
+> - `quantityUsed >= quantityRequired` → `used`
+> - `quantityIssued >= quantityRequired` → `issued`
+> - `quantityIssued > 0` → `pending` (partially issued)
+> - Otherwise → `required`
+
+#### 1. Create a transaction
+- **URL**: `/materials/:materialId/transactions`
+- **Method**: `POST`
+- **URL Parameters**:
+  - `materialId`: UUID of the material
+- **Request Body**: [CreateMaterialTransactionDto](#creatematerialtransactiondto)
+- **Responses**: `201 Created`, `400 Bad Request`, `404 Material not found`
+- **Side effect**: Auto-recalculates material quantities and status
+
+#### 2. Get all transactions for a material
+- **URL**: `/materials/:materialId/transactions`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `materialId`: UUID of the material
+- **Responses**: `200 OK` - Returns array of [MaterialTransaction](#materialtransaction) objects sorted by date
+
+#### 3. Get a transaction by ID
+- **URL**: `/materials/:materialId/transactions/:id`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `materialId`: UUID of the material
+  - `id`: UUID of the transaction
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Update a transaction
+- **URL**: `/materials/:materialId/transactions/:id`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `materialId`: UUID of the material
+  - `id`: UUID of the transaction
+- **Request Body**: Partial [CreateMaterialTransactionDto](#creatematerialtransactiondto)
+- **Responses**: `200 OK`, `404 Not Found`
+- **Side effect**: Auto-recalculates material quantities and status
+
+#### 5. Delete a transaction
+- **URL**: `/materials/:materialId/transactions/:id`
+- **Method**: `DELETE`
+- **URL Parameters**:
+  - `materialId`: UUID of the material
+  - `id`: UUID of the transaction
+- **Responses**: `200 OK`, `404 Not Found`
+- **Side effect**: Auto-recalculates material quantities and status
 
 ## Data Models
 
@@ -530,6 +617,12 @@ Materials associated with drawings. Each drawing can have multiple materials. **
 |---|---|---|
 | `id` | UUID | The unique identifier of the material. |
 | `data` | JSONB | Dynamic key-value pairs based on material columns. |
+| `status` | Enum | Lifecycle status: `required`, `issued`, `used`, `pending`, `returned`, `rejected`. Default: `required`. |
+| `quantityRequired` | Decimal | Quantity needed. Default: `0`. |
+| `quantityIssued` | Decimal | Quantity dispatched. Default: `0`. |
+| `quantityUsed` | Decimal | Quantity consumed. Default: `0`. |
+| `unit` | String | Unit of measurement (e.g., `meters`, `kg`, `pieces`). Optional. |
+| `remarks` | String | Additional notes. Optional. |
 | `drawingId` | UUID | The drawing this material belongs to. |
 | `createdAt` | Date | Timestamp of creation. |
 | `updatedAt` | Date | Timestamp of last update. |
@@ -538,7 +631,43 @@ Materials associated with drawings. Each drawing can have multiple materials. **
 
 | Field | Type | Required | Example |
 |---|---|---|---|
-| `data` | Object | Yes | `{ "name": "Steel Pipe", "quantity": 10 }` |
+| `data` | Object | Yes | `{ "name": "Steel Pipe", "spec": "A106 Gr.B" }` |
+| `status` | Enum (MaterialStatus) | No | `"required"` |
+| `quantityRequired` | Number | No | `100` |
+| `quantityIssued` | Number | No | `80` |
+| `quantityUsed` | Number | No | `70` |
+| `unit` | String | No | `"meters"` |
+| `remarks` | String | No | `"Urgent delivery needed"` |
+
+### UpdateMaterialStatusDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `status` | Enum (MaterialStatus) | Yes | `"issued"` |
+
+### MaterialTransaction
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the transaction. |
+| `materialId` | UUID | The material this transaction belongs to. |
+| `transactionType` | Enum | Type: `issued`, `used`, `returned`. |
+| `quantity` | Decimal | Quantity for this transaction. |
+| `documentNumber` | String | Document/challan/invoice number. |
+| `transactionDate` | Date | Date of the transaction. |
+| `remarks` | String | Additional notes. Optional. |
+| `createdAt` | Date | Timestamp of creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+### CreateMaterialTransactionDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `transactionType` | Enum (MaterialTransactionType) | Yes | `"issued"` |
+| `quantity` | Number | Yes | `50` |
+| `documentNumber` | String | Yes | `"INV-2026-001"` |
+| `transactionDate` | String (ISO8601 date) | Yes | `"2026-02-26"` |
+| `remarks` | String | No | `"First batch delivery"` |
 
 ## Configuration
 

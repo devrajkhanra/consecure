@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { Job } from "./job.entity";
+import { Job } from "../../job/entities/job.entity";
 import { ColumnType } from "./column-type.enum";
 
 @Entity('material_columns')
