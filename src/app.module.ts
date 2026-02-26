@@ -24,7 +24,10 @@ import { MaterialTransactionModule } from './material-transaction/material-trans
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        extra: {
+    max: 10, // Limits the connection pool to 10 simultaneous connections
+  },
+        synchronize: process.env.NODE_ENV !== 'production',
       }),
       inject: [ConfigService],
     }),
