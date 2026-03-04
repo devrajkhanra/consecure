@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProjectModule } from './project/project.module';
@@ -14,6 +15,11 @@ import { MaterialTransactionModule } from './material-transaction/material-trans
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 60000,  // 60 seconds default TTL
+      max: 100,    // maximum number of items in cache
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -25,8 +31,8 @@ import { MaterialTransactionModule } from './material-transaction/material-trans
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         extra: {
-    max: 10, // Limits the connection pool to 10 simultaneous connections
-  },
+          max: 10, // Limits the connection pool to 10 simultaneous connections
+        },
         synchronize: process.env.NODE_ENV !== 'production',
       }),
       inject: [ConfigService],
