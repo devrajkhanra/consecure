@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { SpoolService } from './spool.service';
 import { Spool } from './entities/spool.entity';
 import { CreateSpoolDto } from './dto/create-spool.dto';
 import { UpdateSpoolDto } from './dto/update-spool.dto';
 
 @ApiTags('spools')
+@ApiBearerAuth()
 @Controller('drawings/:drawingId/spools')
 export class SpoolController {
     constructor(private readonly spoolService: SpoolService) { }

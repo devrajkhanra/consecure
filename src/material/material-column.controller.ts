@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { MaterialColumnService } from './material-column.service';
 import { MaterialColumn } from './entities/material-column.entity';
 import { CreateMaterialColumnDto } from './dto/create-material-column.dto';
 import { UpdateMaterialColumnDto } from './dto/update-material-column.dto';
 
 @ApiTags('material-columns')
+@ApiBearerAuth()
 @Controller('jobs/:jobId/material-columns')
 export class MaterialColumnController {
     constructor(private readonly columnService: MaterialColumnService) { }

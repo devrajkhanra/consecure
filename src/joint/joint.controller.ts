@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { JointService } from './joint.service';
 import { Joint } from './entities/joint.entity';
 import { CreateJointDto } from './dto/create-joint.dto';
@@ -7,6 +7,7 @@ import { UpdateJointDto } from './dto/update-joint.dto';
 import { UpdateJointStageDto } from './dto/update-joint-stage.dto';
 
 @ApiTags('joints')
+@ApiBearerAuth()
 @Controller('drawings/:drawingId/joints')
 export class JointController {
     constructor(private readonly jointService: JointService) { }

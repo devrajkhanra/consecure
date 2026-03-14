@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { DrawingConnectionService } from './drawing-connection.service';
 import { DrawingConnection } from './entities/drawing-connection.entity';
 import { CreateDrawingConnectionDto } from './dto/create-drawing-connection.dto';
 import { UpdateDrawingConnectionDto } from './dto/update-drawing-connection.dto';
 
 @ApiTags('drawing-connections')
+@ApiBearerAuth()
 @Controller('drawing-connections')
 export class DrawingConnectionController {
     constructor(private readonly connectionService: DrawingConnectionService) { }

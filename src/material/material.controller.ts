@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { MaterialService } from './material.service';
 import { Material } from './entities/material.entity';
 import { MaterialStatus } from './entities/material-status.enum';
@@ -8,6 +8,7 @@ import { UpdateMaterialDto } from './dto/update-material.dto';
 import { UpdateMaterialStatusDto } from './dto/update-material-status.dto';
 
 @ApiTags('materials')
+@ApiBearerAuth()
 @Controller('drawings/:drawingId/materials')
 export class MaterialController {
     constructor(private readonly materialService: MaterialService) { }
@@ -89,6 +90,7 @@ export class MaterialController {
 
 // Job-level material access
 @ApiTags('materials')
+@ApiBearerAuth()
 @Controller('jobs/:jobId/materials')
 export class JobMaterialController {
     constructor(private readonly materialService: MaterialService) { }

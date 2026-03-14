@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { MaterialTransactionService } from './material-transaction.service';
 import { MaterialTransaction } from './entities/material-transaction.entity';
 import { CreateMaterialTransactionDto } from './dto/create-material-transaction.dto';
 import { UpdateMaterialTransactionDto } from './dto/update-material-transaction.dto';
 
 @ApiTags('material-transactions')
+@ApiBearerAuth()
 @Controller('materials/:materialId/transactions')
 export class MaterialTransactionController {
     constructor(private readonly transactionService: MaterialTransactionService) { }
