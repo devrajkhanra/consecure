@@ -40,4 +40,8 @@ export class CreateMaterialDto {
     @IsString()
     @IsOptional()
     remarks?: string;
+
+    @ApiProperty({ description: 'Exclude from auto-usage at joint fitup', required: false, default: false })
+    @IsOptional()
+    outOfScope?: boolean;
 }

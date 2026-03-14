@@ -37,6 +37,10 @@ export class Material {
     @Column({ type: 'text', nullable: true })
     remarks: string;
 
+    @ApiProperty({ description: 'Flag to exclude this material from automatic joint usage', default: false })
+    @Column({ name: 'out_of_scope', default: false })
+    outOfScope: boolean;
+
     @ApiProperty({ description: 'The drawing this material belongs to', type: () => Drawing })
     @ManyToOne(() => Drawing, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'drawing_id' })

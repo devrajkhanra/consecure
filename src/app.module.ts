@@ -9,6 +9,9 @@ import { SiteModule } from './site/site.module';
 import { JobModule } from './job/job.module';
 import { MaterialModule } from './material/material.module';
 import { MaterialTransactionModule } from './material-transaction/material-transaction.module';
+import { JointModule } from './joint/joint.module';
+import { SpoolModule } from './spool/spool.module';
+import { DrawingConnectionModule } from './drawing-connection/drawing-connection.module';
 
 @Module({
   imports: [
@@ -42,6 +45,9 @@ import { MaterialTransactionModule } from './material-transaction/material-trans
     JobModule,
     MaterialModule,
     MaterialTransactionModule,
+    JointModule,
+    SpoolModule,
+    DrawingConnectionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

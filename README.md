@@ -468,6 +468,123 @@ Records of material issuance, usage, and returns. Each transaction is linked to 
 - **Responses**: `200 OK`, `404 Not Found`
 - **Side effect**: Auto-recalculates material quantities and status
 
+---
+
+### Joints
+
+Tag: `joints`
+
+Joints are connection points within a drawing where two materials are joined. Each joint progresses through **stages**: `pending` → `fitup` → `welding` → `erection` → `completed`.
+
+> **Auto-usage**: When a joint's stage reaches `fitup` or beyond, the two linked materials are **automatically marked as `used`** in the material lifecycle.
+
+#### 1. Create a joint
+- **URL**: `/drawings/:drawingId/joints`
+- **Method**: `POST`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+- **Request Body**: [CreateJointDto](#createjointdto)
+- **Responses**: `201 Created`, `400 Bad Request`
+
+#### 2. Get all joints for a drawing
+- **URL**: `/drawings/:drawingId/joints`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+- **Responses**: `200 OK` - Returns array of [Joint](#joint) objects with materials
+
+#### 3. Get a joint by ID
+- **URL**: `/drawings/:drawingId/joints/:id`
+- **Method**: `GET`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the joint
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 4. Update a joint
+- **URL**: `/drawings/:drawingId/joints/:id`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the joint
+- **Request Body**: Partial [CreateJointDto](#createjointdto)
+- **Responses**: `200 OK`, `404 Not Found`
+
+#### 5. Update joint stage (auto-marks materials as used)
+- **URL**: `/drawings/:drawingId/joints/:id/stage`
+- **Method**: `PATCH`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the joint
+- **Request Body**: [UpdateJointStageDto](#updatejointstagedto)
+- **Responses**: `200 OK`, `404 Not Found`
+- **Side effect**: When stage ≥ `fitup`, both linked materials are auto-set to `used`
+
+#### 6. Delete a joint
+- **URL**: `/drawings/:drawingId/joints/:id`
+- **Method**: `DELETE`
+- **URL Parameters**:
+  - `drawingId`: UUID of the drawing
+  - `id`: UUID of the joint
+- **Responses**: `200 OK`, `404 Not Found`
+
+---
+
+### Spools (Prefabricated Assemblies)
+
+Tag: `spools`
+
+Spools are prefabricated pipe assemblies within a drawing.
+
+#### 1. Create a spool
+- **URL**: `/drawings/:drawingId/spools`
+- **Method**: `POST`
+- **URL Parameters**: `drawingId` (UUID)
+- **Request Body**: `spoolNumber`, `status` (optional), `description` (optional), `remarks` (optional)
+- **Responses**: `201 Created`
+
+#### 2. Get all spools for a drawing
+- **URL**: `/drawings/:drawingId/spools`
+- **Method**: `GET`
+- **URL Parameters**: `drawingId` (UUID)
+- **Responses**: `200 OK`
+
+#### 3. Get / Update / Delete spool
+- **URL**: `/drawings/:drawingId/spools/:id`
+- **Methods**: `GET`, `PATCH`, `DELETE`
+- **URL Parameters**: `drawingId` (UUID), `id` (UUID)
+- **Responses**: `200 OK`, `404 Not Found`
+
+---
+
+### Drawing Connections (Cross-Drawing Links)
+
+Tag: `drawing-connections`
+
+Formally track how two drawings are connected to each other. The connection can reference a specific `material`, `spool`, or `joint`.
+
+#### 1. Create a drawing connection
+- **URL**: `/drawing-connections`
+- **Method**: `POST`
+- **Request Body**: `drawingOneId`, `drawingTwoId`, `connectionType` (material/spool/joint), `materialId` (optional), `spoolId` (optional), `jointId` (optional), `description`, `remarks`
+- **Responses**: `201 Created`
+
+#### 2. Get all connections
+- **URL**: `/drawing-connections`
+- **Method**: `GET`
+- **Responses**: `200 OK`
+
+#### 3. Get connections for a specific drawing
+- **URL**: `/drawing-connections/drawing/:drawingId`
+- **Method**: `GET`
+- **URL Parameters**: `drawingId` (UUID)
+- **Responses**: `200 OK`
+
+#### 4. Get / Update / Delete connection
+- **URL**: `/drawing-connections/:id`
+- **Methods**: `GET`, `PATCH`, `DELETE`
+- **Responses**: `200 OK`, `404 Not Found`
+
 ## Data Models
 
 ### Project
@@ -668,6 +785,41 @@ Records of material issuance, usage, and returns. Each transaction is linked to 
 | `documentNumber` | String | Yes | `"INV-2026-001"` |
 | `transactionDate` | String (ISO8601 date) | Yes | `"2026-02-26"` |
 | `remarks` | String | No | `"First batch delivery"` |
+
+### Joint
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | UUID | The unique identifier of the joint. |
+| `jointNumber` | String | Joint identifier (e.g., F01, M05). Unique per drawing. |
+| `drawingId` | UUID | The drawing this joint belongs to. |
+| `stage` | Enum | Current stage: `pending`, `fitup`, `welding`, `erection`, `completed`. Default: `pending`. |
+| `materialOneId` | UUID | First material used in fitup. Optional. |
+| `materialTwoId` | UUID | Second material used in fitup. Optional. |
+| `fitupDate` | Date | Date fitup was completed. Optional. |
+| `weldDate` | Date | Date welding was completed. Optional. |
+| `erectionDate` | Date | Date erection was completed. Optional. |
+| `remarks` | String | Additional notes. Optional. |
+| `createdAt` | Date | Timestamp of creation. |
+| `updatedAt` | Date | Timestamp of last update. |
+
+### CreateJointDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `jointNumber` | String | Yes | `"F01"` |
+| `materialOneId` | UUID | No | `"uuid-of-material"` |
+| `materialTwoId` | UUID | No | `"uuid-of-material"` |
+| `remarks` | String | No | `"Main beam connection"` |
+
+### UpdateJointStageDto
+
+| Field | Type | Required | Example |
+|---|---|---|---|
+| `stage` | Enum (JointStage) | Yes | `"fitup"` |
+| `fitupDate` | String (ISO8601 date) | No | `"2026-03-13"` |
+| `weldDate` | String (ISO8601 date) | No | `"2026-03-15"` |
+| `erectionDate` | String (ISO8601 date) | No | `"2026-03-20"` |
 
 ## Configuration
 
