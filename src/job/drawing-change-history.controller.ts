@@ -1,10 +1,11 @@
 import { Controller, Get, Param, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { DrawingChangeHistoryService } from './drawing-change-history.service';
 import { DrawingChangeHistory } from './entities/drawing-change-history.entity';
 import { ChangeType } from './entities/change-type.enum';
 
 @ApiTags('Drawing Change History')
+@ApiBearerAuth()
 @Controller('jobs/:jobId')
 export class DrawingChangeHistoryController {
     constructor(private readonly changeHistoryService: DrawingChangeHistoryService) { }
@@ -35,6 +36,7 @@ export class DrawingChangeHistoryController {
 
 // Alternative controller for simpler route without jobId
 @ApiTags('Drawing Change History')
+@ApiBearerAuth()
 @Controller('drawings')
 export class DrawingChangeHistoryAltController {
     constructor(private readonly changeHistoryService: DrawingChangeHistoryService) { }

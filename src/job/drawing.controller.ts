@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { DrawingService } from './drawing.service';
 import { CreateDrawingDto } from './dto/create-drawing.dto';
 import { UpdateDrawingDto } from './dto/update-drawing.dto';
 import { Drawing } from './entities/drawing.entity';
 
 @ApiTags('drawings')
+@ApiBearerAuth()
 @Controller('jobs/:jobId/drawings')
 export class DrawingController {
     constructor(private readonly drawingService: DrawingService) { }

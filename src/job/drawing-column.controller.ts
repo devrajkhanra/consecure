@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { DrawingColumnService } from './drawing-column.service';
 import { CreateDrawingColumnDto } from './dto/create-drawing-column.dto';
 import { UpdateDrawingColumnDto } from './dto/update-drawing-column.dto';
 import { DrawingColumn } from './entities/drawing-column.entity';
 
 @ApiTags('drawing-columns')
+@ApiBearerAuth()
 @Controller('jobs/:jobId/columns')
 export class DrawingColumnController {
     constructor(private readonly columnService: DrawingColumnService) { }
