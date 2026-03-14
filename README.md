@@ -343,6 +343,7 @@ Materials associated with drawings with **lifecycle tracking**. Each drawing can
   - `drawingId`: UUID of the drawing
 - **Request Body**: [CreateMaterialDto](#creatematerialdto)
 - **Responses**: `201 Created`, `400 Bad Request`
+- **Side effect**: May auto-generate [Spool](#spool) entities if `Spool Number` and `Spool Qty` are present in the `data` payload.
 
 #### 2. Get all materials for a drawing
 - **URL**: `/drawings/:drawingId/materials`
@@ -535,6 +536,8 @@ Joints are connection points within a drawing where two materials are joined. Ea
 Tag: `spools`
 
 Spools are prefabricated pipe assemblies within a drawing.
+
+> **Auto-generation**: When a Material is created or updated with `Spool Number` (e.g., `"1,7"`) and `Spool Qty` (e.g., `2`) in its `data` payload, the system automatically parses them and generates the corresponding Spool entities (e.g., `S01`, `S07`) for that drawing if they don't already exist.
 
 #### 1. Create a spool
 - **URL**: `/drawings/:drawingId/spools`
